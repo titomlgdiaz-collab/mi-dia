@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="es" data-accent="lila">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Mi día">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#F5F4FA">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>Mi día</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F4FA; --surface:#FFFFFF; --ink:#26213A; --muted:#6E6886; --line:#E4E1EE;
+  --casa:#F2B640; --insti:#4FA3E3; --ok:#22A06B;
+  --accent:#7C5CE0; --accent-soft:#ECE6FC; --on-accent:#FFFFFF;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"Figtree", -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+[data-accent="menta"]{--accent:#1E9A77; --accent-soft:#DCF2EB}
+[data-accent="frambuesa"]{--accent:#D93D72; --accent-soft:#FBE2EB}
+[data-accent="cielo"]{--accent:#2E78D6; --accent-soft:#DEEAFA}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17151F; --surface:#221F2D; --ink:#F1EEF8; --muted:#A8A2BC; --line:#363142;
+    --accent:#A58BFF; --accent-soft:#2F2850; --on-accent:#17151F; color-scheme:dark;
+  }
+  :root:not([data-theme="light"])[data-accent="menta"]{--accent:#4FD1A8; --accent-soft:#1B3A31}
+  :root:not([data-theme="light"])[data-accent="frambuesa"]{--accent:#FF7AA6; --accent-soft:#45202F}
+  :root:not([data-theme="light"])[data-accent="cielo"]{--accent:#6FAEFF; --accent-soft:#1C2D47}
+}
+:root[data-theme="dark"]{
+  --bg:#17151F; --surface:#221F2D; --ink:#F1EEF8; --muted:#A8A2BC; --line:#363142;
+  --accent:#A58BFF; --accent-soft:#2F2850; --on-accent:#17151F; color-scheme:dark;
+}
+:root[data-theme="dark"][data-accent="menta"]{--accent:#4FD1A8; --accent-soft:#1B3A31}
+:root[data-theme="dark"][data-accent="frambuesa"]{--accent:#FF7AA6; --accent-soft:#45202F}
+:root[data-theme="dark"][data-accent="cielo"]{--accent:#6FAEFF; --accent-soft:#1C2D47}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg); color:var(--ink); font-family:var(--body); font-size:17px; line-height:1.45; -webkit-font-smoothing:antialiased; min-height:100%}
+button{font:inherit; color:inherit; cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+.wrap{max-width:560px; margin:0 auto; padding:18px 18px 120px}
+h1,h2,h3{font-family:var(--display); margin:0; line-height:1.1}
+
+/* Cabecera */
+.top{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px}
+.hello h1{font-size:1.9rem; font-weight:800; letter-spacing:-.02em}
+.hello p{margin:2px 0 0; color:var(--muted); font-size:.95rem; text-transform:capitalize}
+.starpill{display:flex; align-items:center; gap:6px; background:var(--surface); border:2px solid var(--line); border-radius:999px; padding:6px 12px 6px 8px; font-family:var(--display); font-weight:800; font-size:1.15rem}
+.starpill svg{width:24px; height:24px}
+.streak{font-family:var(--body); font-weight:600; font-size:.8rem; color:var(--muted); margin-left:4px}
+
+/* Ahora toca */
+.now{background:var(--accent); color:var(--on-accent); border-radius:28px; padding:22px 22px 20px; position:relative; overflow:hidden; margin-bottom:26px}
+.now .lead{font-weight:600; opacity:.85; font-size:.95rem}
+.now h2{font-size:2.1rem; font-weight:800; letter-spacing:-.02em; margin:6px 0 10px; max-width:15ch}
+.now .meta{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px}
+.now .tag{background:rgba(255,255,255,.22); border-radius:999px; padding:3px 10px; font-size:.85rem; font-weight:600}
+.now .go{background:var(--surface); color:var(--ink); border:0; border-radius:16px; padding:14px 22px; font-weight:700; font-size:1.05rem; display:inline-flex; align-items:center; gap:8px}
+.now .ghost{background:transparent; color:var(--on-accent); border:2px solid rgba(255,255,255,.5); border-radius:16px; padding:12px 16px; font-weight:600; margin-left:8px}
+.now .deco{position:absolute; right:-28px; top:-28px; width:150px; height:150px; opacity:.16}
+.now.alldone{text-align:left}
+
+/* Lista del día */
+.sec-title{display:flex; align-items:baseline; justify-content:space-between; margin:0 0 10px}
+.sec-title h3{font-size:1.25rem; font-weight:700}
+.sec-title span{color:var(--muted); font-size:.9rem}
+.day{list-style:none; margin:0 0 26px; padding:0; position:relative}
+.day::before{content:""; position:absolute; left:61px; top:10px; bottom:10px; width:2px; background:var(--line)}
+.task{display:grid; grid-template-columns:48px 28px 1fr; align-items:center; gap:0 10px; padding:9px 0; background:none; border:0; width:100%; text-align:left}
+.task .time{font-weight:600; font-size:.9rem; color:var(--muted); text-align:right}
+.task .dot{width:26px; height:26px; border-radius:50%; border:3px solid var(--line); background:var(--bg); position:relative; z-index:1; display:grid; place-items:center}
+.task.casa .dot{border-color:var(--casa)}
+.task.insti .dot{border-color:var(--insti)}
+.task.done .dot{background:var(--ok); border-color:var(--ok)}
+.task.done .dot svg{display:block}
+.task .dot svg{display:none; width:15px; height:15px; color:#fff}
+.task .card{background:var(--surface); border:2px solid var(--line); border-radius:18px; padding:11px 14px}
+.task.current .card{border-color:var(--accent)}
+.task .t{font-weight:700; font-size:1.02rem}
+.task.done .t{text-decoration:line-through; text-decoration-thickness:2px; color:var(--muted)}
+.task .c{font-size:.82rem; color:var(--muted); font-weight:600; display:flex; align-items:center; gap:5px; margin-top:2px}
+.task .c i{width:9px; height:9px; border-radius:3px; display:inline-block}
+.task.casa .c i{background:var(--casa)} .task.insti .c i{background:var(--insti)} .task.otra .c i{background:var(--muted)}
+
+.banner{background:var(--accent-soft); border-radius:16px; padding:12px 14px; font-size:.92rem; margin-bottom:18px}
+.empty{color:var(--muted); padding:8px 0 20px}
+
+/* Barra inferior */
+.tabs{position:fixed; left:0; right:0; bottom:0; background:var(--surface); border-top:2px solid var(--line); padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px)); display:flex; justify-content:center; gap:6px; z-index:20}
+.tabs button{flex:1; max-width:150px; background:none; border:0; border-radius:14px; padding:6px 4px; display:flex; flex-direction:column; align-items:center; gap:2px; font-size:.78rem; font-weight:600; color:var(--muted)}
+.tabs button svg{width:24px; height:24px}
+.tabs button[aria-current="page"]{color:var(--accent); background:var(--accent-soft)}
+
+/* Hojas y capas */
+.layer{position:fixed; inset:0; z-index:50; display:none; background:var(--bg); overflow-y:auto; padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+.layer.open{display:block}
+.sheet-wrap{position:fixed; inset:0; z-index:60; display:none; background:rgba(20,16,35,.45); align-items:flex-end; justify-content:center}
+.sheet-wrap.open{display:flex}
+.sheet{background:var(--surface); width:100%; max-width:560px; border-radius:26px 26px 0 0; padding:22px 20px calc(22px + env(safe-area-inset-bottom,0px)); max-height:88vh; overflow-y:auto}
+.sheet h2{font-size:1.6rem; font-weight:800; margin-bottom:4px}
+.sheet .sub{color:var(--muted); margin:0 0 16px}
+.steps{list-style:none; padding:0; margin:0 0 18px}
+.steps li{margin-bottom:6px}
+.steps label{display:flex; gap:12px; align-items:flex-start; background:var(--bg); border-radius:14px; padding:11px 12px; cursor:pointer}
+.steps input{width:22px; height:22px; accent-color:var(--accent); margin:1px 0 0; flex:none}
+.steps input:checked + span{text-decoration:line-through; color:var(--muted)}
+.dur{display:flex; align-items:center; gap:10px; margin-bottom:18px}
+.dur button{width:44px; height:44px; border-radius:12px; border:2px solid var(--line); background:var(--bg); font-size:1.3rem; font-weight:700}
+.dur strong{font-family:var(--display); font-size:1.4rem; min-width:84px; text-align:center}
+.btn{display:block; width:100%; border:0; border-radius:16px; padding:15px; font-weight:700; font-size:1.05rem; background:var(--accent); color:var(--on-accent); margin-bottom:10px}
+.btn.alt{background:var(--bg); color:var(--ink); border:2px solid var(--line)}
+.btn.small{display:inline-block; width:auto; padding:10px 16px; font-size:.95rem; margin:0}
+
+/* Temporizador */
+.focus{min-height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:28px 22px; text-align:center}
+.focus .what{font-family:var(--display); font-size:1.5rem; font-weight:800; margin:0 0 4px; max-width:20ch}
+.focus .hint{color:var(--muted); margin:0 0 22px; max-width:30ch}
+.ring{position:relative; width:min(78vw,320px); aspect-ratio:1}
+.ring svg{width:100%; height:100%; transform:rotate(-90deg)}
+.ring .track{stroke:var(--accent-soft)}
+.ring .bar{stroke:var(--accent); transition:stroke-dashoffset .9s linear}
+.ring .num{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center}
+.ring .num b{font-family:var(--display); font-size:clamp(3rem,16vw,4.6rem); font-weight:800; letter-spacing:-.03em; font-variant-numeric:tabular-nums}
+.ring .num span{color:var(--muted); font-weight:600}
+.focus .row{display:flex; gap:10px; margin-top:26px; width:100%; max-width:360px}
+.focus .row .btn{margin:0}
+.warn{background:var(--accent-soft); border-radius:14px; padding:10px 14px; margin-top:16px; font-size:.92rem; max-width:360px}
+
+/* Celebración */
+.party{min-height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px 24px}
+.sticker{width:170px; height:170px; margin-bottom:10px}
+.sticker svg{width:100%; height:100%}
+.party h2{font-size:2.3rem; font-weight:800; letter-spacing:-.02em; margin-bottom:8px}
+.party p{color:var(--muted); margin:0 0 6px; max-width:30ch}
+.earn{font-family:var(--display); font-size:1.4rem; font-weight:800; color:var(--accent); margin:10px 0 24px}
+.earn small{display:block; font-family:var(--body); font-size:.9rem; color:var(--muted); font-weight:600}
+@media (prefers-reduced-motion: no-preference){
+  .party.show .sticker{animation:pop .7s cubic-bezier(.2,1.6,.4,1) both}
+  @keyframes pop{0%{transform:scale(.2) rotate(-40deg); opacity:0} 100%{transform:scale(1) rotate(-8deg); opacity:1}}
+}
+.party .sticker{transform:rotate(-8deg)}
+
+/* Premios */
+.bank{display:flex; align-items:center; gap:16px; background:var(--surface); border:2px solid var(--line); border-radius:24px; padding:18px; margin-bottom:22px}
+.bank svg{width:64px; height:64px; flex:none}
+.bank b{font-family:var(--display); font-size:2.6rem; font-weight:800; line-height:1}
+.bank span{color:var(--muted); display:block}
+.rewards{list-style:none; margin:0 0 24px; padding:0; display:grid; gap:10px}
+.rewards li{display:flex; align-items:center; gap:12px; background:var(--surface); border:2px solid var(--line); border-radius:18px; padding:12px 14px}
+.rewards .n{flex:1; font-weight:700}
+.rewards .cost{font-weight:700; color:var(--muted); display:flex; align-items:center; gap:4px; font-size:.95rem}
+.rewards .cost svg{width:18px; height:18px}
+.rewards button:disabled{opacity:.45; cursor:not-allowed}
+.hist{list-style:none; padding:0; margin:0; color:var(--muted); font-size:.92rem}
+.hist li{padding:6px 0; border-bottom:1px solid var(--line)}
+
+/* Ajustes */
+.field{margin-bottom:16px}
+.field label{display:block; font-weight:700; margin-bottom:6px}
+.field input{width:100%; font:inherit; padding:12px 14px; border-radius:14px; border:2px solid var(--line); background:var(--surface); color:var(--ink)}
+.field small{color:var(--muted); display:block; margin-top:4px}
+.swatches{display:flex; gap:12px; flex-wrap:wrap}
+.swatches button{width:56px; height:56px; border-radius:18px; border:3px solid transparent; position:relative}
+.swatches button[aria-pressed="true"]{border-color:var(--ink)}
+.box{background:var(--surface); border:2px solid var(--line); border-radius:22px; padding:18px; margin-bottom:18px}
+.box h3{font-size:1.2rem; margin-bottom:12px}
+.redit{display:grid; grid-template-columns:1fr 70px 40px; gap:8px; margin-bottom:8px}
+.redit input{font:inherit; padding:10px; border-radius:12px; border:2px solid var(--line); background:var(--bg); color:var(--ink); width:100%}
+.redit button{border:0; background:var(--bg); border-radius:12px; font-weight:700}
+.pinpad{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; max-width:280px; margin:10px auto 6px}
+.pinpad button{height:62px; border-radius:18px; border:2px solid var(--line); background:var(--bg); font-family:var(--display); font-size:1.5rem; font-weight:700}
+.pindots{display:flex; justify-content:center; gap:12px; margin:10px 0}
+.pindots i{width:16px; height:16px; border-radius:50%; border:2px solid var(--muted)}
+.pindots i.on{background:var(--accent); border-color:var(--accent)}
+.pinerr{color:#D93D3D; text-align:center; min-height:1.4em; font-weight:600}
+.toast{position:fixed; left:50%; bottom:calc(96px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); background:var(--ink); color:var(--bg); padding:10px 18px; border-radius:999px; font-weight:600; z-index:90; opacity:0; pointer-events:none; transition:opacity .25s}
+.toast.on{opacity:1}
+.hidden{display:none !important}
+#partyLayer{z-index:70}
+.focus .row2{display:flex; gap:10px; margin-top:10px; width:100%; max-width:360px}
+.focus .row2 .btn{margin:0; font-size:.95rem; padding:12px}
+.btn:disabled{opacity:.5; cursor:not-allowed}
+.status{min-height:1.5em; margin-top:14px; max-width:360px}
+.reasons{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px}
+.reasons button{background:var(--bg); border:2px solid var(--line); border-radius:16px; padding:14px 10px; font-weight:700}
+textarea{width:100%; font:inherit; padding:12px 14px; border-radius:14px; border:2px solid var(--line); background:var(--surface); color:var(--ink); min-height:90px; resize:vertical}
+.photo{display:flex; align-items:center; justify-content:center; gap:8px; border:2px dashed var(--line); border-radius:16px; padding:16px; font-weight:700; color:var(--muted); cursor:pointer}
+.photo input{display:none}
+.preview{max-width:100%; border-radius:14px; margin-top:10px; display:block}
+.err{color:#D93D3D; font-weight:600; min-height:1.4em; margin:0 0 8px}
+.late .card{border-style:dashed}
+.logday{margin-bottom:14px}
+.logday summary{font-weight:800; font-family:var(--display); font-size:1.1rem; padding:6px 0; cursor:pointer}
+.logitem{background:var(--bg); border-radius:14px; padding:12px; margin:8px 0; font-size:.92rem}
+.logitem b{display:block; font-size:1rem; margin-bottom:4px}
+.logitem p{margin:2px 0; color:var(--muted)}
+.logitem img{max-width:160px; border-radius:10px; margin-top:6px; display:block}
+</style>
+</head>
+<body>
+
+<main class="wrap" id="app"></main>
+
+<nav class="tabs" aria-label="Secciones">
+  <button data-tab="hoy" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="4"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>Hoy</button>
+  <button data-tab="premios"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="3"/><path d="M12 8v13M3 13h18M12 8c-2-4-6-4-6-1.5S10 8 12 8zm0 0c2-4 6-4 6-1.5S14 8 12 8z"/></svg>Premios</button>
+  <button data-tab="ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Ajustes</button>
+</nav>
+
+<div class="sheet-wrap" id="sheetWrap"><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+<section class="layer" id="focusLayer" aria-live="polite"></section>
+<section class="layer" id="partyLayer"></section>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- Utilidades ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2,'0');
+const keyOf = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const hm = d => d ? pad(new Date(d).getHours())+':'+pad(new Date(d).getMinutes()) : '';
+const today = () => keyOf(new Date());
+const minTxt = ms => { const m = Math.round(ms/60000); return m < 1 ? 'menos de 1 min' : m + ' min'; };
+const STAR = '<svg viewBox="0 0 24 24"><path fill="#F7B731" stroke="#E09A12" stroke-width="1.5" stroke-linejoin="round" d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg>';
+const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const MAX_POSTPONE = 2;
+
+/* ---------- Estado guardado en el móvil ---------- */
+const DEFAULT = {
+  apodo:'', accent:'lila', pin:'1234', calUrl:'', minPct:50, consultMax:10,
+  stars:0, done:{}, dayBonus:{}, streak:{last:'', count:0}, log:{}, postpone:{},
+  rewards:[
+    {id:'r1', name:'Elegir la cena un día', cost:15},
+    {id:'r2', name:'30 minutos extra de móvil', cost:20},
+    {id:'r3', name:'Elegir la peli del finde', cost:25},
+    {id:'r4', name:'Salida especial con el equipo', cost:60}
+  ],
+  history:[], cache:null
+};
+let S, F = null, storageWarned = false;
+function load(){
+  try { S = Object.assign({}, DEFAULT, JSON.parse(localStorage.getItem('midia') || '{}')); }
+  catch(e){ S = Object.assign({}, DEFAULT); }
+  const lim = new Date(); lim.setDate(lim.getDate() - 30); const k = keyOf(lim);
+  Object.keys(S.log).forEach(d => { if (d < k) Object.values(S.log[d]).forEach(x => delete x.photo); });
+}
+/* Si la memoria se llena, se borran primero las fotos más antiguas (y después el registro de hace más de 60 días),
+   para que nunca se pierdan estrellas ni el registro reciente. */
+function freeSpace(){
+  const days = Object.keys(S.log).sort();
+  for (const d of days) for (const x of Object.values(S.log[d])) if (x.photo){ delete x.photo; return true; }
+  const lim = new Date(); lim.setDate(lim.getDate() - 60);
+  if (days.length && days[0] < keyOf(lim)){ delete S.log[days[0]]; return true; }
+  return false;
+}
+const isQuota = e => e && (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED' || e.code === 22 || e.code === 1014);
+function save(){
+  S.focus = F;
+  for (;;){
+    try { localStorage.setItem('midia', JSON.stringify(S)); return true; }
+    catch(e){
+      if (isQuota(e) && freeSpace()) continue;
+      if (!storageWarned){ storageWarned = true; setTimeout(() => toast('No se ha podido guardar en el móvil. Avisa al equipo.'), 0); }
+      return false;
+    }
+  }
+}
+load();
+try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch(e){}
+document.documentElement.dataset.accent = S.accent;
+
+/* ---------- Tareas ---------- */
+let TASKS = [];
+let calStatus = 'demo';
+function parseTask(ev){
+  let title = (ev.title || '').trim(), cat = 'otra';
+  const m = title.match(/^(casa|insti|instituto|clase)\s*[:\-]\s*/i);
+  if (m){ cat = /casa/i.test(m[1]) ? 'casa' : 'insti'; title = title.slice(m[0].length); }
+  const decode = s => s.replace(/&nbsp;/gi,' ').replace(/&lt;/gi,'<').replace(/&gt;/gi,'>').replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/&amp;/gi,'&');
+  const steps = decode((ev.description || '').replace(/<br\s*\/?>|<\/(p|div|li)>/gi,'\n').replace(/<[^>]+>/g,'')).split('\n')
+    .map(s => s.replace(/^\s*(?:[-•*·–]+|\d{1,2}[.)])\s*/,'').trim()).filter(Boolean);
+  return {id: ev.id || title, title, cat, steps, start: ev.allDay ? null : new Date(ev.start), end: ev.allDay ? null : new Date(ev.end), allDay: !!ev.allDay};
+}
+function demoEvents(){
+  const d = new Date(), at = (h,m) => { const x = new Date(d); x.setHours(h,m,0,0); return x.toISOString(); };
+  return [
+    {id:'d0', title:'Casa: Hacer la cama y recoger el cuarto', start:at(9,0), end:at(9,15), description:'Estirar sábanas y colcha\nRopa sucia al cesto\nAbrir la ventana'},
+    {id:'d1', title:'Insti: Deberes de matemáticas', start:at(17,0), end:at(17,40), description:'Sacar el cuaderno y el libro\nHacer los ejercicios de la página 54\nRevisar que estén todos\nGuardarlo en la mochila'},
+    {id:'d2', title:'Casa: Limpiar el baño (mi turno)', start:at(18,0), end:at(18,25), description:'Recoger lo que haya por medio\nLavabo y espejo con el limpiador\nVáter por dentro y por fuera\nFregar el suelo\nTirar la basurita del baño'},
+    {id:'d3', title:'Insti: Estudiar Biología, tema 3', start:at(19,0), end:at(19,30), description:'Leer el resumen del tema\nHacer un esquema\nTaparlo y explicarlo en voz alta'},
+    {id:'d4', title:'Casa: Sacar la basura', start:at(21,0), end:at(21,10), description:'Bolsa de orgánico\nBolsa de envases\nPoner bolsas nuevas'}
+  ];
+}
+const cachedTasks = () => (S.cache && S.cache.date === today() && Array.isArray(S.cache.events)) ? S.cache.events.map(parseTask) : null;
+/* Al abrir la app se enseñan enseguida las últimas tareas guardadas (sirve también sin conexión) */
+function initialTasks(){
+  if (!S.calUrl){ calStatus = 'demo'; TASKS = demoEvents().map(parseTask); return; }
+  const c = cachedTasks(); TASKS = c || []; calStatus = c ? 'ok' : 'loading';
+}
+async function loadTasks(){
+  if (!S.calUrl){ calStatus = 'demo'; TASKS = demoEvents().map(parseTask); return; }
+  try{
+    const r = await fetch(S.calUrl + (S.calUrl.includes('?') ? '&' : '?') + 'd=' + today(), {cache:'no-store'});
+    if (!r.ok) throw new Error('http ' + r.status);
+    const j = await r.json();
+    if (j && !Array.isArray(j) && j.error){ const c = cachedTasks(); TASKS = c || []; calStatus = 'auth'; return; }
+    const evs = Array.isArray(j) ? j : (j.events || []);
+    S.cache = {date: today(), events: evs}; save();
+    TASKS = evs.map(parseTask); calStatus = 'ok';
+  }catch(e){
+    const c = cachedTasks(); TASKS = c || []; calStatus = c ? 'offline' : 'error';
+  }
+}
+/* Aplica los aplazamientos y ordena */
+function tasks(){
+  const po = S.postpone[today()] || {};
+  return TASKS.map(t => {
+    if (po[t.id] && t.start){ const dur = t.end - t.start, st = new Date(po[t.id]); return Object.assign({}, t, {start: st, end: new Date(st.getTime() + dur), moved: true}); }
+    return t;
+  }).sort((a,b) => (a.start ? a.start.getTime() : 0) - (b.start ? b.start.getTime() : 0));
+}
+const findTask = id => tasks().find(x => x.id === id);
+const isDone = t => !!(S.done[today()] && S.done[today()][t.id]);
+const isLate = t => !isDone(t) && t.end && t.end.getTime() < Date.now();
+function currentTask(){
+  const open = tasks().filter(t => !isDone(t));
+  return open.find(t => !isLate(t)) || open[0] || null;
+}
+
+/* ---------- Registro ---------- */
+function rec(id){
+  const d = today(); S.log[d] = S.log[d] || {};
+  const t = findTask(id);
+  return S.log[d][id] = S.log[d][id] || {title: t ? t.title : id, ev: [], postponed: 0};
+}
+function logEv(id, type, extra){ rec(id).ev.push(Object.assign({type, at: Date.now()}, extra || {})); save(); }
+
+/* ---------- Pantallas ---------- */
+let tab = 'hoy';
+const catName = c => c === 'casa' ? 'Casa' : c === 'insti' ? 'Instituto' : 'Otra';
+function render(){
+  document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.tab === tab ? 'page' : 'false'));
+  if (tab === 'hoy') renderHoy();
+  if (tab === 'premios') renderPremios();
+  if (tab === 'ajustes') renderAjustes();
+}
+function header(){
+  const h = new Date().getHours();
+  const saludo = h < 13 ? 'Buenos días' : h < 21 ? 'Buenas tardes' : 'Buenas noches';
+  const fecha = new Date().toLocaleDateString('es-ES',{weekday:'long', day:'numeric', month:'long'});
+  const racha = S.streak.count > 1 ? `<span class="streak">${S.streak.count} días seguidos</span>` : '';
+  return `<header class="top"><div class="hello"><h1>${esc(saludo)}${S.apodo ? ', ' + esc(S.apodo) : ''}</h1><p>${esc(fecha)}</p></div>
+    <div class="starpill" aria-label="${S.stars} estrellas">${STAR}${S.stars}${racha}</div></header>`;
+}
+const DECO = `<svg class="deco" viewBox="0 0 24 24">${STAR.replace(/<\/?svg[^>]*>/g,'')}</svg>`;
+function item(t, cur){
+  return `<li><button class="task ${t.cat} ${isDone(t)?'done':''} ${isLate(t)?'late':''} ${cur && cur.id===t.id?'current':''}" data-open="${esc(t.id)}">
+    <span class="time">${t.allDay ? 'Día' : hm(t.start)}</span><span class="dot">${CHECK}</span>
+    <span class="card"><span class="t">${esc(t.title)}</span><span class="c"><i></i>${catName(t.cat)}${t.moved ? ', aplazada' : ''}</span></span></button></li>`;
+}
+function renderHoy(){
+  const all = tasks(), cur = currentTask();
+  const total = all.length, hechas = all.filter(isDone).length;
+  const onTime = all.filter(t => !isLate(t)), late = all.filter(isLate);
+  let banner = '';
+  if (calStatus === 'demo') banner = `<div class="banner">Estas tareas son de ejemplo. Cuando el equipo conecte el calendario, aquí saldrán las tuyas.</div>`;
+  if (calStatus === 'error') banner = `<div class="banner">No se ha podido cargar el calendario. Revisa que haya internet y vuelve a abrir la app.</div>`;
+  if (calStatus === 'offline') banner = `<div class="banner">Ahora no hay conexión. Te enseño las últimas tareas que se cargaron.</div>`;
+  if (calStatus === 'auth') banner = `<div class="banner">El enlace del calendario no funciona. Avisa al equipo para que lo revise.</div>`;
+  let hero;
+  if (!total && calStatus === 'loading') hero = `<section class="now"><p class="lead">Un momento</p><h2>Cargando tus tareas</h2></section>`;
+  else if (!total) hero = `<section class="now"><p class="lead">Hoy</p><h2>No tienes tareas apuntadas</h2><p class="lead">Si falta algo, apúntalo en tu calendario.</p></section>`;
+  else if (!cur) hero = `<section class="now">${DECO}<p class="lead">Has terminado todo</p><h2>Día completo</h2><p class="lead">${hechas} de ${total} tareas hechas. Ahora a descansar.</p></section>`;
+  else {
+    const hora = cur.allDay ? 'Durante el día' : hm(cur.start) + ' a ' + hm(cur.end);
+    hero = `<section class="now">${DECO}<p class="lead">${isLate(cur) ? 'Se te pasó la hora, pero aún puedes hacerla' : 'Ahora toca'}</p><h2>${esc(cur.title)}</h2>
+      <div class="meta"><span class="tag">${hora}</span><span class="tag">${catName(cur.cat)}</span>${cur.steps.length ? `<span class="tag">${cur.steps.length} pasos</span>` : ''}</div>
+      <button class="go" data-open="${esc(cur.id)}">Empezar</button></section>`;
+  }
+  $('#app').innerHTML = header() + banner + hero +
+    `<div class="sec-title"><h3>Mi día</h3><span>${hechas} de ${total} hechas</span></div>` +
+    (onTime.length ? `<ul class="day">${onTime.map(t => item(t, cur)).join('')}</ul>` : `<p class="empty">Nada por aquí.</p>`) +
+    (late.length ? `<div class="sec-title"><h3>Pendientes</h3><span>Se pasó la hora</span></div><ul class="day">${late.map(t => item(t, cur)).join('')}</ul>` : '');
+}
+function renderPremios(){
+  const r = S.rewards.map(x => `<li><span class="n">${esc(x.name)}</span><span class="cost">${STAR}${x.cost}</span>
+    <button class="btn small" data-redeem="${esc(x.id)}" ${S.stars < x.cost ? 'disabled' : ''}>Canjear</button></li>`).join('');
+  const h = S.history.slice(-8).reverse().map(x => `<li>${esc(x.date)}: ${esc(x.name)} (${x.cost} estrellas)</li>`).join('');
+  $('#app').innerHTML = header() +
+    `<div class="bank">${STAR}<div><b>${S.stars}</b><span>estrellas para canjear</span></div></div>
+     <div class="sec-title"><h3>Premios</h3></div>
+     ${S.rewards.length ? `<ul class="rewards">${r}</ul>` : `<p class="empty">Todavía no hay premios. Pídele al equipo que los añada.</p>`}
+     <div class="sec-title"><h3>Lo que has conseguido</h3></div>
+     ${h ? `<ul class="hist">${h}</ul>` : `<p class="empty">Aquí aparecerán los premios que canjees.</p>`}`;
+}
+function renderAjustes(){
+  const sw = [['lila','#7C5CE0'],['menta','#1E9A77'],['frambuesa','#D93D72'],['cielo','#2E78D6']]
+    .map(([n,c]) => `<button style="background:${c}" data-accent="${n}" aria-label="Color ${n}" aria-pressed="${S.accent===n}"></button>`).join('');
+  $('#app').innerHTML = header() +
+    `<div class="box"><h3>Mi estilo</h3>
+      <div class="field"><label for="apodo">Cómo quieres que te llame</label><input id="apodo" maxlength="20" value="${esc(S.apodo)}" placeholder="Tu nombre o apodo"></div>
+      <div class="field"><label>Color de la app</label><div class="swatches">${sw}</div></div></div>
+     <div class="box"><h3>Zona del equipo</h3><p style="color:var(--muted);margin:0 0 14px">Registro de tareas, premios, estrellas y calendario.</p>
+      <button class="btn alt" id="teamBtn">Entrar con código</button></div>`;
+  $('#apodo').addEventListener('change', e => { S.apodo = e.target.value.trim(); save(); toast('Guardado'); });
+}
+
+/* ---------- Detalle de tarea ---------- */
+let mins = 25;
+function openTask(id){
+  const t = findTask(id); if (!t) return;
+  mins = t.start && t.end ? Math.max(5, Math.round((t.end - t.start)/60000)) : 20;
+  const steps = t.steps.length ? `<ul class="steps">${t.steps.map(s => `<li><label><input type="checkbox"><span>${esc(s)}</span></label></li>`).join('')}</ul>` : '';
+  const left = MAX_POSTPONE - rec(id).postponed;
+  sheet(`<h2>${esc(t.title)}</h2><p class="sub">${catName(t.cat)}${t.start ? ', de ' + hm(t.start) + ' a ' + hm(t.end) : ''}</p>
+    ${steps}
+    ${isDone(t) ? `<p class="banner">Esta tarea ya está hecha. ¡Bien!</p><button class="btn alt" data-close>Cerrar</button>` : `
+    <div class="dur"><button data-mins="-5" aria-label="Menos tiempo">−</button><strong id="minsOut">${mins} min</strong><button data-mins="5" aria-label="Más tiempo">+</button></div>
+    <button class="btn" data-start="${esc(t.id)}">Empezar con temporizador</button>
+    <button class="btn alt" data-quickdone="${esc(t.id)}">Ya la hice y se me olvidó marcarla</button>
+    ${left > 0 && t.start ? `<button class="btn alt" data-postpone="${esc(t.id)}">Posponer (te ${left === 1 ? 'queda 1 vez' : 'quedan ' + left + ' veces'})</button>` : ''}
+    <button class="btn alt" data-close>Cerrar</button>`}`);
+}
+function sheet(html){ $('#sheet').innerHTML = html; $('#sheetWrap').classList.add('open'); }
+function closeSheet(){ $('#sheetWrap').classList.remove('open'); }
+
+/* ---------- Temporizador ---------- */
+/* El estado del temporizador (F) se guarda en el móvil en cada cambio: si iOS cierra la app
+   en segundo plano, al volver a abrirla el temporizador sigue donde estaba. */
+let ticker = null, wake = null, actx = null;
+const worked = () => ((F.finishAt || F.pauseAt || Date.now()) - F.startAt) - F.pausedMs;
+const consultOn = () => !!(F && F.consultStart && F.consultUntil > Date.now());
+const consultBudget = () => F ? Math.max(0, S.consultMax*60000 - F.consultMs) : 0;
+function keepAwake(){ try { navigator.wakeLock && navigator.wakeLock.request('screen').then(w => wake = w).catch(()=>{}); } catch(e){} }
+function audioOn(){ try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state !== 'running') actx.resume(); } catch(e){} }
+function startFocus(id){
+  const t = findTask(id); if (!t) return;
+  closeSheet();
+  audioOn();
+  const total = mins * 60000;
+  F = {id, title:t.title, total, minMs: total * S.minPct / 100, startAt: Date.now(), pausedMs:0, pauseAt:null, pauseReason:'', consultUntil:0, consultStart:null, consultMs:0, left:false, rang:false, finishAt:0, hiddenAt:0, canPostpone: !!t.start};
+  logEv(id, 'start', {planned: mins});
+  drawFocus();
+}
+function drawFocus(){
+  keepAwake();
+  const C = 2*Math.PI*46;
+  $('#focusLayer').innerHTML = `<div class="focus">
+    <p class="what">${esc(F.title)}</p><p class="hint">Céntrate solo en esto. Si mantienes la concentración, ganas una estrella extra.</p>
+    <div class="ring"><svg viewBox="0 0 100 100"><circle class="track" cx="50" cy="50" r="46" fill="none" stroke-width="7"/>
+      <circle class="bar" id="bar" cx="50" cy="50" r="46" fill="none" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="0"/></svg>
+      <div class="num"><b id="clock">${pad(Math.round(F.total/60000))}:00</b><span id="clockSub">quedan</span></div></div>
+    <div class="status" id="status"></div>
+    <div class="row"><button class="btn alt" id="pauseBtn">${F.pauseAt ? 'Seguir' : 'Pausa'}</button><button class="btn" id="finishBtn">Lo he terminado</button></div>
+    <div class="row2">${S.consultMax > 0 ? `<button class="btn alt" id="consultBtn">Necesito buscar algo</button>` : ''}${F.canPostpone !== false ? `<button class="btn alt" id="postponeBtn">Posponer</button>` : ''}</div></div>`;
+  $('#focusLayer').classList.add('open');
+  clearInterval(ticker); ticker = setInterval(tick, 500); tick();
+}
+function tick(){
+  if (!F || !$('#clock')) return;
+  const w = worked(), rem = Math.max(0, F.total - w), s = Math.ceil(rem/1000);
+  $('#clock').textContent = pad(Math.floor(s/60)) + ':' + pad(s%60);
+  $('#bar').style.strokeDashoffset = 2*Math.PI*46 * (1 - rem/F.total);
+  if (F.consultStart && !consultOn()){ endConsult(); }
+  let st = '';
+  if (F.pauseAt){ $('#clockSub').textContent = 'en pausa'; st = `<p class="warn">Pausa: ${esc(F.pauseReason)}. Llevas ${minTxt(Date.now() - F.pauseAt)}. Este rato no cuenta.</p>`; }
+  else { $('#clockSub').textContent = rem <= 0 ? '¡Tiempo!' : 'quedan'; }
+  if (consultOn()) st += `<p class="warn">Modo consulta: puedes usar el móvil para buscar lo que necesites. Te quedan ${Math.ceil((F.consultUntil - Date.now())/60000)} min.</p>`;
+  if (F.left && !F.pauseAt && !consultOn()) st += `<p class="warn">Has salido de la app. No pasa nada, sigue con la tarea.</p>`;
+  $('#status').innerHTML = st;
+  const fb = $('#finishBtn');
+  if (w < F.minMs){ fb.disabled = true; fb.textContent = 'Podrás terminar en ' + Math.ceil((F.minMs - w)/60000) + ' min'; }
+  else { fb.disabled = !!F.pauseAt; fb.textContent = 'Lo he terminado'; }
+  const cb = $('#consultBtn');
+  if (cb){
+    if (consultOn()){ cb.textContent = 'Ya he terminado de buscar'; cb.disabled = false; }
+    else if (consultBudget() < 30000){ cb.textContent = 'Ya no queda tiempo para buscar'; cb.disabled = true; }
+    else { cb.textContent = 'Necesito buscar algo'; cb.disabled = !!F.pauseAt; }
+  }
+  if (rem <= 0 && !F.rang){ F.rang = true; save(); chime(); }
+}
+/* El rato de consulta se cuenta solo hasta que se acaba, aunque ella vuelva a la app más tarde */
+function endConsult(){
+  if (!F || !F.consultStart) return;
+  const ms = Math.max(0, Math.min(Date.now(), F.consultUntil || Date.now()) - F.consultStart);
+  F.consultMs += ms; F.consultStart = null; F.consultUntil = 0;
+  logEv(F.id, 'consult-end', {ms});
+}
+function chime(){
+  try{
+    if (!actx) return;
+    [0, .18, .36].forEach((d,i) => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.frequency.value = [660, 880, 1175][i]; o.type = 'sine';
+      g.gain.setValueAtTime(0.0001, actx.currentTime + d);
+      g.gain.exponentialRampToValueAtTime(0.3, actx.currentTime + d + .02);
+      g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + d + .6);
+      o.connect(g).connect(actx.destination); o.start(actx.currentTime + d); o.stop(actx.currentTime + d + .7);
+    });
+  }catch(e){}
+}
+function stopFocus(){
+  clearInterval(ticker); ticker = null;
+  try { wake && wake.release(); } catch(e){} wake = null;
+  $('#focusLayer').classList.remove('open');
+  F = null; save();
+}
+function onHide(){
+  if (!F || F.hiddenAt) return;
+  F.hiddenAt = Date.now();
+  /* Pausa, modo consulta y la pantalla final (foto y comentario) permiten salir de la app sin perder la estrella extra */
+  F.hiddenOk = !!F.pauseAt || !!F.finishAt || consultOn();
+  F.hiddenUntil = (F.pauseAt || F.finishAt) ? 0 : F.consultUntil;
+  if (!F.hiddenOk){ F.left = true; logEv(F.id, 'left'); } else save();
+}
+function onReturn(){
+  if (!F || !F.hiddenAt) return;
+  if (F.hiddenOk && !F.pauseAt && !F.finishAt && F.hiddenUntil && Date.now() - F.hiddenUntil > 60000 && !F.left){ F.left = true; logEv(F.id, 'left'); }
+  F.hiddenAt = 0; save();
+}
+document.addEventListener('visibilitychange', () => {
+  if (!F){ if (!document.hidden) refresh(); return; }
+  if (document.hidden) onHide();
+  else { onReturn(); keepAwake(); audioOn(); tick(); refresh(); }
+});
+window.addEventListener('pagehide', () => { if (F) onHide(); else save(); });
+/* Si iOS cerró la app mientras había una tarea en marcha, se recupera al abrirla */
+function restoreFocus(){
+  const f = S.focus; if (!f || !f.startAt || !f.id) return;
+  if (keyOf(new Date(f.startAt)) !== today()){ S.focus = null; save(); return; }
+  F = f;
+  onReturn();
+  drawFocus();
+  if (F.finishAt) evidenceSheet(F.id, 'timer');
+}
+
+const REASONS = ['Ir al baño','Una llamada','Llaman a la puerta','Algo en la cocina','Me han llamado en casa','Otra cosa'];
+function askPause(){
+  sheet(`<h2>¿Qué ha pasado?</h2><p class="sub">El tiempo de pausa no cuenta. Cuando vuelvas, pulsa “Seguir”.</p>
+    <div class="reasons">${REASONS.map(r => `<button data-preason="${esc(r)}">${esc(r)}</button>`).join('')}</div>
+    <button class="btn alt" data-close>Cancelar</button>`);
+}
+function askPostpone(id){
+  const left = MAX_POSTPONE - rec(id).postponed;
+  if (left <= 0){ toast('Ya la has pospuesto dos veces. Toca hacerla hoy'); return; }
+  sheet(`<h2>Posponer la tarea</h2><p class="sub">Puedes posponerla ${left === 1 ? '1 vez más' : left + ' veces más'} hoy. Elige cuándo la harás.</p>
+    <div class="reasons">${[15,30,60].map(m => `<button data-pmins="${m}" data-pid="${esc(id)}">Dentro de ${m} min</button>`).join('')}</div>
+    <button class="btn alt" data-close>Cancelar</button>`);
+}
+function doPostpone(id, m){
+  const r = rec(id); r.postponed++;
+  const when = new Date(Date.now() + m*60000);
+  S.postpone[today()] = S.postpone[today()] || {}; S.postpone[today()][id] = when.toISOString();
+  if (F && F.id === id) endConsult();
+  logEv(id, 'postpone', {mins: m, worked: F && F.id === id ? worked() : 0});
+  if (F && F.id === id) stopFocus();
+  closeSheet(); render(); toast('Pospuesta a las ' + hm(when));
+}
+
+/* ---------- Foto y observaciones ---------- */
+let pending = {photo: null};
+function evidenceSheet(id, mode){
+  pending = {photo: null};
+  const quick = mode === 'quick';
+  sheet(`<h2>${quick ? 'Marcar como hecha' : '¡Terminada!'}</h2>
+    <p class="sub">${quick ? 'Cuéntanos cuándo la hiciste. Añade una foto o un comentario.' : 'Si quieres, añade una foto o un comentario.'}</p>
+    ${quick ? `<div class="field"><label for="doneAt">¿A qué hora la hiciste?</label><input id="doneAt" type="time" value="${hm(new Date())}"></div>` : ''}
+    <div class="field"><label class="photo"><input type="file" accept="image/*" id="photoIn">Añadir foto</label><img id="prev" class="preview hidden" alt="Foto de la tarea"></div>
+    <div class="field"><label for="note">Comentario</label><textarea id="note" maxlength="400" placeholder="Por ejemplo: me costó encontrar el libro"></textarea></div>
+    <p class="err" id="evErr"></p>
+    <button class="btn" data-evsave="${esc(id)}" data-mode="${mode}">Guardar</button>
+    ${quick ? `<button class="btn alt" data-close>Cancelar</button>` : ''}`);
+  $('#photoIn').onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try { pending.photo = await shrink(f); const p = $('#prev'); p.src = pending.photo; p.classList.remove('hidden'); }
+    catch(err){ $('#evErr').textContent = 'No se ha podido cargar la foto. Prueba con otra.'; }
+  };
+}
+function shrink(file){
+  return new Promise((ok, ko) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, 700 / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = img.width*k; c.height = img.height*k;
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      ok(c.toDataURL('image/jpeg', .6));
+    };
+    img.onerror = ko; img.src = url;
+  });
+}
+function saveEvidence(id, mode){
+  const note = $('#note').value.trim();
+  if (mode === 'quick' && !note && !pending.photo){ $('#evErr').textContent = 'Añade una foto o un comentario para poder marcarla.'; return; }
+  const r = rec(id); r.note = note; if (pending.photo) r.photo = pending.photo;
+  if (mode === 'quick') logEv(id, 'quick', {doneAt: $('#doneAt').value});
+  complete(id, mode);
+  if (pending.photo && !r.photo) toast('Memoria llena: la foto no se ha guardado');
+}
+
+/* ---------- Completar y premiar ---------- */
+const FRASES = ['¡Bien hecho!','Una menos','¡Lo has conseguido!','Eso es constancia','Así se hace','¡Genial!'];
+const SUBS = ['Tu yo de mañana te lo agradece.','Cada tarea cuenta.','Paso a paso se llega lejos.','Te lo has ganado.','Sigue así, vas muy bien.'];
+function complete(id, mode){
+  const timer = mode === 'timer' && F && F.id === id;
+  /* Si la tarea ha desaparecido del calendario mientras la hacía, se completa igualmente */
+  const t = findTask(id) || (timer ? {id, title: F.title} : null);
+  if (!t || isDone(t)){ if (timer) stopFocus(); closeSheet(); return; }
+  const d = today();
+  S.done[d] = S.done[d] || {};
+  let earned = 1, notes = ['1 por hacer la tarea'];
+  const r = rec(id); r.via = timer ? 'temporizador' : 'marcada a mano';
+  if (timer){
+    if (F.consultStart) endConsult();
+    r.start = F.startAt; r.end = F.finishAt || Date.now(); r.worked = worked(); r.paused = F.pausedMs; r.consult = F.consultMs; r.left = F.left;
+    logEv(id, 'finish');
+    if (!F.left){ earned++; notes.push('1 extra por mantener la concentración'); }
+  }
+  S.done[d][id] = {at: Date.now()};
+  if (S.streak.last !== d){
+    const y = new Date(); y.setDate(y.getDate()-1);
+    S.streak.count = S.streak.last === keyOf(y) ? S.streak.count + 1 : 1; S.streak.last = d;
+  }
+  const allDone = tasks().length && tasks().every(isDone);
+  if (allDone && !S.dayBonus[d]){ S.dayBonus[d] = true; earned += 3; notes.push('3 extra por completar el día'); }
+  S.stars += earned;
+  if (timer) stopFocus();
+  if (!save() && r.photo){ delete r.photo; save(); }
+  closeSheet();
+  party(allDone ? 'Día completo' : FRASES[Math.floor(Math.random()*FRASES.length)],
+        allDone ? 'Has hecho todas tus tareas de hoy. Eso tiene mucho mérito.' : SUBS[Math.floor(Math.random()*SUBS.length)], earned, notes);
+}
+function party(title, sub, earned, notes){
+  const L = $('#partyLayer');
+  L.innerHTML = `<div class="party"><div class="sticker">${STAR}</div><h2>${esc(title)}</h2><p>${esc(sub)}</p>
+    <p class="earn">${earned ? `+${earned} ${earned === 1 ? 'estrella' : 'estrellas'}<small>${notes.map(esc).join(', ')}</small>` : 'Te lo has ganado tarea a tarea'}</p>
+    <button class="btn" style="max-width:360px" data-closeparty>Seguir</button></div>`;
+  L.classList.add('open');
+  const p = L.querySelector('.party'); p.classList.remove('show'); void p.offsetWidth; p.classList.add('show');
+  try { actx && chime(); } catch(e){}
+}
+
+/* ---------- Código y zona del equipo ---------- */
+function askPin(title){
+  return new Promise(resolve => {
+    let v = '';
+    const draw = err => {
+      sheet(`<h2>${esc(title)}</h2><p class="sub">Introduce el código del equipo.</p>
+        <div class="pindots">${[0,1,2,3].map(i => `<i class="${i < v.length ? 'on':''}"></i>`).join('')}</div>
+        <p class="pinerr">${err ? 'Código incorrecto' : ''}</p>
+        <div class="pinpad">${[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map(k => k === '' ? '<span></span>' : `<button data-k="${k}">${k}</button>`).join('')}</div>
+        <button class="btn alt" data-k="x">Cancelar</button>`);
+      $('#sheet').querySelectorAll('[data-k]').forEach(b => b.onclick = e => {
+        e.stopPropagation(); const k = b.dataset.k;
+        if (k === 'x'){ closeSheet(); return resolve(false); }
+        if (k === '⌫'){ v = v.slice(0,-1); return draw(); }
+        v += k;
+        if (v.length === 4){ if (v === S.pin){ closeSheet(); return resolve(true); } v = ''; return draw(true); }
+        draw();
+      });
+    };
+    draw();
+  });
+}
+async function redeem(id){
+  const r = S.rewards.find(x => x.id === id); if (!r || S.stars < r.cost) return;
+  if (!(await askPin('Canjear: ' + r.name))) return;
+  S.stars -= r.cost; S.history.push({date: new Date().toLocaleDateString('es-ES'), name: r.name, cost: r.cost});
+  save(); render(); party('¡Premio conseguido!', r.name, 0, []);
+}
+async function teamZone(){ if (await askPin('Zona del equipo')) drawTeam(); }
+function drawTeam(){
+  const rows = S.rewards.map(r => `<div class="redit" data-id="${esc(r.id)}"><input value="${esc(r.name)}" data-f="name" aria-label="Premio"><input type="number" min="1" value="${r.cost}" data-f="cost" aria-label="Estrellas"><button data-delr="${esc(r.id)}" aria-label="Quitar premio">✕</button></div>`).join('');
+  sheet(`<h2>Zona del equipo</h2><p class="sub">Los cambios se guardan en este móvil.</p>
+    <button class="btn" id="logBtn">Ver registro de tareas</button>
+    <div class="field" style="margin-top:16px"><label for="minPct">Tiempo mínimo antes de poder terminar</label><input id="minPct" type="number" min="0" max="100" value="${S.minPct}"><small>En porcentaje del tiempo de la tarea. Con 50, en una tarea de 30 min no puede terminar antes de 15.</small></div>
+    <div class="field"><label for="consultMax">Minutos de “modo consulta”</label><input id="consultMax" type="number" min="0" max="30" value="${S.consultMax}"><small>Tiempo que puede usar el móvil para buscar algo sin perder la estrella extra. Pon 0 para quitar esta opción.</small></div>
+    <div class="field"><label for="calUrl">Enlace del calendario</label><input id="calUrl" value="${esc(S.calUrl)}" placeholder="https://script.google.com/macros/s/..."><small>El enlace completo del calendario, con el ID y el token. Al guardar, la app comprueba si funciona.</small></div>
+    <div class="field"><label for="newPin">Nuevo código (4 cifras)</label><input id="newPin" inputmode="numeric" maxlength="4" placeholder="Déjalo vacío para no cambiarlo"></div>
+    <div class="field"><label>Premios y estrellas que cuestan</label>${rows}<button class="btn alt small" id="addR">Añadir premio</button></div>
+    <div class="field"><label>Ajustar estrellas (ahora ${S.stars})</label>
+      <div style="display:flex;gap:8px"><button class="btn alt small" data-adj="-5">−5</button><button class="btn alt small" data-adj="-1">−1</button><button class="btn alt small" data-adj="1">+1</button><button class="btn alt small" data-adj="5">+5</button></div></div>
+    <button class="btn" id="saveTeam">Guardar cambios</button><button class="btn alt" data-close>Cerrar</button>`);
+  const sh = $('#sheet');
+  sh.querySelector('#logBtn').onclick = drawLog;
+  sh.querySelector('#addR').onclick = () => { collectRewards(); S.rewards.push({id:'r'+Date.now(), name:'Nuevo premio', cost:10}); drawTeam(); };
+  sh.querySelectorAll('[data-delr]').forEach(b => b.onclick = () => { collectRewards(); S.rewards = S.rewards.filter(r => r.id !== b.dataset.delr); drawTeam(); });
+  sh.querySelectorAll('[data-adj]').forEach(b => b.onclick = () => { collectRewards(); S.stars = Math.max(0, S.stars + Number(b.dataset.adj)); save(); drawTeam(); });
+  sh.querySelector('#saveTeam').onclick = async () => {
+    collectRewards();
+    const url = $('#calUrl').value.trim(), np = $('#newPin').value.trim();
+    if (np && !/^\d{4}$/.test(np)){ toast('El código tiene que ser de 4 cifras'); return; }
+    if (np) S.pin = np;
+    S.minPct = Math.min(100, Math.max(0, parseInt($('#minPct').value,10) || 0));
+    S.consultMax = Math.min(30, Math.max(0, parseInt($('#consultMax').value,10) || 0));
+    const changed = url !== S.calUrl; S.calUrl = url; if (changed) S.cache = null; save(); closeSheet(); toast('Cambios guardados');
+    if (changed){
+      if (url) toast('Probando el calendario…');
+      await loadTasks(); lastLoad = Date.now();
+      if (url) toast(calStatus === 'ok' ? 'Calendario conectado: ' + TASKS.length + (TASKS.length === 1 ? ' tarea hoy' : ' tareas hoy')
+        : calStatus === 'auth' ? 'El enlace no es correcto. Revisa el token y el ID' : 'No se ha podido conectar con el calendario');
+    }
+    render();
+  };
+}
+function collectRewards(){
+  document.querySelectorAll('.redit').forEach(row => {
+    const r = S.rewards.find(x => x.id === row.dataset.id); if (!r) return;
+    r.name = row.querySelector('[data-f=name]').value.trim() || r.name;
+    r.cost = Math.max(1, parseInt(row.querySelector('[data-f=cost]').value,10) || r.cost);
+  });
+  save();
+}
+function drawLog(){
+  const days = Object.keys(S.log).sort().reverse().slice(0, 14);
+  const body = days.map((d, i) => {
+    const items = Object.values(S.log[d]).map(r => {
+      const pauses = r.ev.filter(e => e.type === 'pause');
+      const pauseTxt = pauses.length ? pauses.map(p => esc(p.reason) + (p.ms ? ' (' + minTxt(p.ms) + ')' : '')).join(', ') : '';
+      const lines = [];
+      if (r.via === 'temporizador') lines.push(`Empezó ${hm(r.start)}, terminó ${hm(r.end)}. Tiempo trabajando: ${minTxt(r.worked)}`);
+      else if (r.via === 'marcada a mano'){ const q = r.ev.find(e => e.type === 'quick'); lines.push(`Marcada a mano. Dice que la hizo a las ${esc(q ? q.doneAt : '?')}`); }
+      else { const st = r.ev.filter(e => e.type === 'start').length; lines.push(st ? `Empezada ${st} ${st === 1 ? 'vez' : 'veces'}, sin terminar` : 'Sin empezar'); }
+      if (pauseTxt) lines.push('Pausas: ' + pauseTxt);
+      if (r.consult) lines.push('Modo consulta: ' + minTxt(r.consult));
+      if (r.postponed) lines.push('Pospuesta ' + r.postponed + (r.postponed === 1 ? ' vez' : ' veces'));
+      if (r.via === 'temporizador') lines.push(r.left ? 'Salió de la app durante la tarea' : 'No salió de la app');
+      if (r.note) lines.push('Comentario: ' + esc(r.note));
+      return `<div class="logitem"><b>${esc(r.title)}</b>${lines.map(l => `<p>${l}</p>`).join('')}${r.photo ? `<img src="${r.photo}" alt="Foto de la tarea">` : ''}</div>`;
+    }).join('');
+    const label = new Date(d + 'T12:00').toLocaleDateString('es-ES',{weekday:'long', day:'numeric', month:'long'});
+    return `<details class="logday" ${i === 0 ? 'open' : ''}><summary>${esc(label)}</summary>${items}</details>`;
+  }).join('');
+  sheet(`<h2>Registro de tareas</h2><p class="sub">Últimos 14 días. Las fotos se borran a los 30 días para no llenar el móvil.</p>
+    ${body || '<p class="empty">Todavía no hay nada registrado.</p>'}
+    <button class="btn alt" id="backTeam">Volver</button>`);
+  $('#backTeam').onclick = drawTeam;
+}
+
+/* ---------- Eventos ---------- */
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 2200); }
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.tab){ tab = b.dataset.tab; render(); window.scrollTo(0,0); }
+  else if (b.dataset.open) openTask(b.dataset.open);
+  else if (b.dataset.start) startFocus(b.dataset.start);
+  else if (b.dataset.quickdone) evidenceSheet(b.dataset.quickdone, 'quick');
+  else if (b.dataset.postpone) askPostpone(b.dataset.postpone);
+  else if (b.dataset.pmins) doPostpone(b.dataset.pid, Number(b.dataset.pmins));
+  else if (b.dataset.evsave) saveEvidence(b.dataset.evsave, b.dataset.mode);
+  else if (b.dataset.mins){ mins = Math.min(120, Math.max(5, mins + Number(b.dataset.mins))); $('#minsOut').textContent = mins + ' min'; }
+  else if (b.dataset.preason){ if (!F || F.pauseAt) { closeSheet(); return; } endConsult(); F.pauseAt = Date.now(); F.pauseReason = b.dataset.preason; logEv(F.id, 'pause', {reason: F.pauseReason}); closeSheet(); $('#pauseBtn').textContent = 'Seguir'; tick(); }
+  else if ('close' in b.dataset) closeSheet();
+  else if ('closeparty' in b.dataset){ $('#partyLayer').classList.remove('open'); render(); }
+  else if (b.dataset.redeem) redeem(b.dataset.redeem);
+  else if (b.dataset.accent && b.closest('.swatches')){ S.accent = b.dataset.accent; save(); document.documentElement.dataset.accent = S.accent; render(); }
+  else if (b.id === 'teamBtn') teamZone();
+  else if (b.id === 'pauseBtn'){
+    if (!F.pauseAt) askPause();
+    else { const ms = Date.now() - F.pauseAt; F.pausedMs += ms; const p = rec(F.id).ev.filter(x => x.type === 'pause').pop(); if (p) p.ms = ms; F.pauseAt = null; logEv(F.id, 'resume'); b.textContent = 'Pausa'; tick(); }
+  }
+  else if (b.id === 'consultBtn' && !b.disabled){
+    if (consultOn()) endConsult();
+    else if (!F.pauseAt && consultBudget() >= 30000){ F.consultStart = Date.now(); F.consultUntil = Date.now() + consultBudget(); logEv(F.id, 'consult'); }
+    tick();
+  }
+  else if (b.id === 'postponeBtn') askPostpone(F.id);
+  else if (b.id === 'finishBtn' && !b.disabled){ endConsult(); F.finishAt = Date.now(); save(); evidenceSheet(F.id, 'timer'); }
+});
+document.addEventListener('pointerdown', () => { if (F) audioOn(); }, {passive:true});
+$('#sheetWrap').addEventListener('click', e => { if (e.target.id === 'sheetWrap' && !F) closeSheet(); });
+
+let lastLoad = 0;
+async function refresh(){
+  if (Date.now() - lastLoad < 60000) return;
+  lastLoad = Date.now(); await loadTasks(); if (!F) render();
+}
+(async () => {
+  initialTasks(); render(); restoreFocus();
+  lastLoad = Date.now(); await loadTasks(); if (!F) render();
+  /* Cada minuto se actualiza la pantalla; el calendario se vuelve a pedir cada 5 minutos */
+  setInterval(() => {
+    if (Date.now() - lastLoad >= 5*60000) refresh();
+    if (!F && tab === 'hoy' && !$('#sheetWrap').classList.contains('open')) render();
+  }, 60000);
+})();
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')){
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+
+</body>
+</html>
