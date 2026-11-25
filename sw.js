@@ -1,7 +1,7 @@
 /* Service worker de "Mi día": guarda la app en el móvil para que abra sin conexión.
    Las tareas del calendario NO pasan por aquí: la app guarda las últimas que cargó.
    Cuando cambies index.html, sube también este archivo cambiando el número de VERSION. */
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = 'midia-' + VERSION;
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'];
 
