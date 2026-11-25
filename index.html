@@ -250,7 +250,8 @@ const DEFAULT = {
     {id:'r3', name:'Elegir la peli del finde', cost:25},
     {id:'r4', name:'Salida especial con el equipo', cost:60}
   ],
-  history:[], cache:null
+  history:[], cache:null,
+  outbox:[], seenRewards:[], newRewards:[], remoteRewards:false
 };
 let S, F = null, storageWarned = false;
 function load(){
@@ -320,11 +321,21 @@ async function loadTasks(){
     const j = await r.json();
     if (j && !Array.isArray(j) && j.error){ const c = cachedTasks(); TASKS = c || []; calStatus = 'auth'; return; }
     const evs = Array.isArray(j) ? j : (j.events || []);
-    S.cache = {date: today(), events: evs}; save();
+    S.cache = {date: today(), events: evs};
+    if (j && Array.isArray(j.rewards)) applyRewards(j.rewards);
+    save();
     TASKS = evs.map(parseTask); calStatus = 'ok';
   }catch(e){
     const c = cachedTasks(); TASKS = c || []; calStatus = c ? 'offline' : 'error';
   }
+}
+/* Los premios llegan de la hoja de Google del equipo. Si aparece uno nuevo, se le avisa */
+function applyRewards(list){
+  const fresh = S.remoteRewards ? list.filter(r => !S.seenRewards.includes(r.id)) : [];
+  S.rewards = list.map(r => ({id: r.id, name: r.name, cost: r.cost, type: r.type || ''}));
+  S.seenRewards = Array.from(new Set(S.seenRewards.concat(list.map(r => r.id))));
+  if (fresh.length) S.newRewards = Array.from(new Set(S.newRewards.concat(fresh.map(r => r.name))));
+  S.remoteRewards = true;
 }
 /* Aplica los aplazamientos y ordena */
 function tasks(){
@@ -346,9 +357,63 @@ function currentTask(){
 function rec(id){
   const d = today(); S.log[d] = S.log[d] || {};
   const t = findTask(id);
-  return S.log[d][id] = S.log[d][id] || {title: t ? t.title : id, ev: [], postponed: 0};
+  return S.log[d][id] = S.log[d][id] || {title: t ? t.title : id, cat: t ? t.cat : 'otra', ev: [], postponed: 0};
 }
 function logEv(id, type, extra){ rec(id).ev.push(Object.assign({type, at: Date.now()}, extra || {})); save(); }
+
+/* ---------- Envío del registro a la hoja del equipo ----------
+   Nunca se envía el nombre que ella pone en Ajustes. Si no hay conexión,
+   lo pendiente se guarda en una cola y se manda cuando vuelva. */
+const postUrl = () => S.calUrl.split('?')[0];
+const tokenOf = () => { try { return new URL(S.calUrl).searchParams.get('token') || ''; } catch(e){ return ''; } };
+function queueTask(id, d){
+  d = d || today(); const key = d + '|' + id;
+  S.outbox = S.outbox.filter(x => x.key !== key); S.outbox.push({kind:'tarea', key, d, id}); save(); flush();
+}
+function queueCanje(c){ S.outbox.push(Object.assign({kind:'canje'}, c)); save(); flush(); }
+function recordFor(x){
+  const r = S.log[x.d][x.id], m = ms => ms ? Math.round(ms/60000) : 0;
+  const pauses = r.ev.filter(e => e.type === 'pause'), q = r.ev.find(e => e.type === 'quick');
+  const estado = r.via === 'temporizador' ? 'Hecha' : r.via === 'marcada a mano' ? 'Hecha (marcada a mano)'
+    : r.postponed ? 'Pospuesta' : r.ev.some(e => e.type === 'start') ? 'Empezada sin terminar' : 'Sin empezar';
+  return {key: x.key, fecha: x.d, tareaId: x.id, tarea: r.title, categoria: catName(r.cat || 'otra'), estado,
+    inicio: r.start ? hm(r.start) : '', fin: r.end ? hm(r.end) : '',
+    minTrabajando: r.worked != null ? m(r.worked) : '',
+    minPausa: m(r.paused != null ? r.paused : pauses.reduce((s, p) => s + (p.ms || 0), 0)),
+    pausas: pauses.map(p => p.reason + (p.ms ? ' (' + minTxt(p.ms) + ')' : '')).join(', '),
+    minConsulta: m(r.consult || 0), pospuesta: r.postponed || 0,
+    salio: r.via === 'temporizador' ? !!r.left : null, horaManual: q ? q.doneAt : '',
+    comentario: r.note || '', estrellas: r.stars || 0, photo: r.photo && !r.photoSent ? r.photo : ''};
+}
+let sending = false;
+async function flush(){
+  if (sending || !S.calUrl || !S.outbox.length) return;
+  sending = true;
+  try{
+    S.outbox = S.outbox.filter(x => x.kind === 'canje' || (S.log[x.d] && S.log[x.d][x.id]));
+    /* Hasta 10 cosas por envío, y como mucho una foto */
+    const items = [], canjes = []; let photo = false;
+    for (const x of S.outbox){
+      if (items.length + canjes.length >= 10) break;
+      if (x.kind === 'canje'){ canjes.push({key: x.key, fecha: x.fecha, premio: x.premio, estrellas: x.estrellas}); continue; }
+      const it = recordFor(x);
+      if (it.photo){ if (photo) continue; photo = true; }
+      items.push(it);
+    }
+    if (!items.length && !canjes.length) return;
+    const res = await fetch(postUrl(), {method: 'POST', body: JSON.stringify({token: tokenOf(), items, canjes})});
+    const j = await res.json();
+    if (j && Array.isArray(j.ok)){
+      const ok = new Set(j.ok);
+      /* La foto ya está en la carpeta del equipo: se borra del móvil para no llenarlo */
+      items.forEach(it => { if (it.photo && ok.has(it.key)){ const r = S.log[it.fecha][it.tareaId]; r.photoSent = true; delete r.photo; } });
+      S.outbox = S.outbox.filter(x => !ok.has(x.key)); save();
+      if (S.outbox.length) setTimeout(flush, 1500);
+    }
+  } catch(e){ /* Sin conexión: se vuelve a intentar más tarde */ }
+  finally { sending = false; }
+}
+window.addEventListener('online', () => flush());
 
 /* ---------- Pantallas ---------- */
 let tab = 'hoy';
@@ -382,6 +447,7 @@ function renderHoy(){
   if (calStatus === 'error') banner = `<div class="banner">No se ha podido cargar el calendario. Revisa que haya internet y vuelve a abrir la app.</div>`;
   if (calStatus === 'offline') banner = `<div class="banner">Ahora no hay conexión. Te enseño las últimas tareas que se cargaron.</div>`;
   if (calStatus === 'auth') banner = `<div class="banner">El enlace del calendario no funciona. Avisa al equipo para que lo revise.</div>`;
+  if (S.newRewards.length) banner += `<div class="banner">${S.newRewards.length === 1 ? 'Hay un premio nuevo' : 'Hay premios nuevos'}: ${esc(S.newRewards.join(', '))}. Míralo en Premios.</div>`;
   let hero;
   if (!total && calStatus === 'loading') hero = `<section class="now"><p class="lead">Un momento</p><h2>Cargando tus tareas</h2></section>`;
   else if (!total) hero = `<section class="now"><p class="lead">Hoy</p><h2>No tienes tareas apuntadas</h2><p class="lead">Si falta algo, apúntalo en tu calendario.</p></section>`;
@@ -398,6 +464,7 @@ function renderHoy(){
     (late.length ? `<div class="sec-title"><h3>Pendientes</h3><span>Se pasó la hora</span></div><ul class="day">${late.map(t => item(t, cur)).join('')}</ul>` : '');
 }
 function renderPremios(){
+  if (S.newRewards.length){ S.newRewards = []; save(); }
   const r = S.rewards.map(x => `<li><span class="n">${esc(x.name)}</span><span class="cost">${STAR}${x.cost}</span>
     <button class="btn small" data-redeem="${esc(x.id)}" ${S.stars < x.cost ? 'disabled' : ''}>Canjear</button></li>`).join('');
   const h = S.history.slice(-8).reverse().map(x => `<li>${esc(x.date)}: ${esc(x.name)} (${x.cost} estrellas)</li>`).join('');
@@ -455,6 +522,7 @@ function startFocus(id){
   const total = mins * 60000;
   F = {id, title:t.title, total, minMs: total * S.minPct / 100, startAt: Date.now(), pausedMs:0, pauseAt:null, pauseReason:'', consultUntil:0, consultStart:null, consultMs:0, left:false, rang:false, finishAt:0, hiddenAt:0, canPostpone: !!t.start};
   logEv(id, 'start', {planned: mins});
+  queueTask(id);
   drawFocus();
 }
 function drawFocus(){
@@ -568,6 +636,7 @@ function doPostpone(id, m){
   S.postpone[today()] = S.postpone[today()] || {}; S.postpone[today()][id] = when.toISOString();
   if (F && F.id === id) endConsult();
   logEv(id, 'postpone', {mins: m, worked: F && F.id === id ? worked() : 0});
+  queueTask(id);
   if (F && F.id === id) stopFocus();
   closeSheet(); render(); toast('Pospuesta a las ' + hm(when));
 }
@@ -637,9 +706,10 @@ function complete(id, mode){
   }
   const allDone = tasks().length && tasks().every(isDone);
   if (allDone && !S.dayBonus[d]){ S.dayBonus[d] = true; earned += 3; notes.push('3 extra por completar el día'); }
-  S.stars += earned;
+  S.stars += earned; r.stars = earned;
   if (timer) stopFocus();
   if (!save() && r.photo){ delete r.photo; save(); }
+  queueTask(id, d);
   closeSheet();
   party(allDone ? 'Día completo' : FRASES[Math.floor(Math.random()*FRASES.length)],
         allDone ? 'Has hecho todas tus tareas de hoy. Eso tiene mucho mérito.' : SUBS[Math.floor(Math.random()*SUBS.length)], earned, notes);
@@ -680,6 +750,7 @@ async function redeem(id){
   const r = S.rewards.find(x => x.id === id); if (!r || S.stars < r.cost) return;
   if (!(await askPin('Canjear: ' + r.name))) return;
   S.stars -= r.cost; S.history.push({date: new Date().toLocaleDateString('es-ES'), name: r.name, cost: r.cost});
+  queueCanje({key: 'c' + Date.now(), fecha: today(), premio: r.name, estrellas: r.cost});
   save(); render(); party('¡Premio conseguido!', r.name, 0, []);
 }
 async function teamZone(){ if (await askPin('Zona del equipo')) drawTeam(); }
@@ -689,15 +760,22 @@ function drawTeam(){
     <button class="btn" id="logBtn">Ver registro de tareas</button>
     <div class="field" style="margin-top:16px"><label for="minPct">Tiempo mínimo antes de poder terminar</label><input id="minPct" type="number" min="0" max="100" value="${S.minPct}"><small>En porcentaje del tiempo de la tarea. Con 50, en una tarea de 30 min no puede terminar antes de 15.</small></div>
     <div class="field"><label for="consultMax">Minutos de “modo consulta”</label><input id="consultMax" type="number" min="0" max="30" value="${S.consultMax}"><small>Tiempo que puede usar el móvil para buscar algo sin perder la estrella extra. Pon 0 para quitar esta opción.</small></div>
-    <div class="field"><label for="calUrl">Enlace del calendario</label><input id="calUrl" value="${esc(S.calUrl)}" placeholder="https://script.google.com/macros/s/..."><small>El enlace completo del calendario, con el ID y el token. Al guardar, la app comprueba si funciona.</small></div>
+    <div class="field"><label for="calUrl">Enlace del calendario</label><input id="calUrl" value="${esc(S.calUrl)}" placeholder="https://script.google.com/macros/s/..."><small>El enlace que da el script de Google, terminado en ?token=… Al guardar, la app comprueba si funciona.</small></div>
     <div class="field"><label for="newPin">Nuevo código (4 cifras)</label><input id="newPin" inputmode="numeric" maxlength="4" placeholder="Déjalo vacío para no cambiarlo"></div>
-    <div class="field"><label>Premios y estrellas que cuestan</label>${rows}<button class="btn alt small" id="addR">Añadir premio</button></div>
+    ${S.remoteRewards
+      ? `<div class="field"><label>Premios</label><small>Se cambian en la hoja de Google del equipo, pestaña “Premios”. La app los actualiza sola.</small></div>`
+      : `<div class="field"><label>Premios y estrellas que cuestan</label>${rows}<button class="btn alt small" id="addR">Añadir premio</button></div>`}
     <div class="field"><label>Ajustar estrellas (ahora ${S.stars})</label>
       <div style="display:flex;gap:8px"><button class="btn alt small" data-adj="-5">−5</button><button class="btn alt small" data-adj="-1">−1</button><button class="btn alt small" data-adj="1">+1</button><button class="btn alt small" data-adj="5">+5</button></div></div>
-    <button class="btn" id="saveTeam">Guardar cambios</button><button class="btn alt" data-close>Cerrar</button>`);
+    ${S.calUrl ? `<p class="sub">${S.outbox.length ? 'Pendiente de enviar al equipo: ' + S.outbox.length + (S.outbox.length === 1 ? ' registro' : ' registros') + '. Se enviará cuando haya internet.' : 'Todo el registro está enviado a la hoja del equipo.'}</p>` : ''}
+    <button class="btn" id="saveTeam">Guardar cambios</button>
+    <button class="btn alt" id="resetBtn">Borrar todo y empezar de cero</button>
+    <button class="btn alt" data-close>Cerrar</button>`);
   const sh = $('#sheet');
   sh.querySelector('#logBtn').onclick = drawLog;
-  sh.querySelector('#addR').onclick = () => { collectRewards(); S.rewards.push({id:'r'+Date.now(), name:'Nuevo premio', cost:10}); drawTeam(); };
+  sh.querySelector('#resetBtn').onclick = drawReset;
+  const addR = sh.querySelector('#addR');
+  if (addR) addR.onclick = () => { collectRewards(); S.rewards.push({id:'r'+Date.now(), name:'Nuevo premio', cost:10}); drawTeam(); };
   sh.querySelectorAll('[data-delr]').forEach(b => b.onclick = () => { collectRewards(); S.rewards = S.rewards.filter(r => r.id !== b.dataset.delr); drawTeam(); });
   sh.querySelectorAll('[data-adj]').forEach(b => b.onclick = () => { collectRewards(); S.stars = Math.max(0, S.stars + Number(b.dataset.adj)); save(); drawTeam(); });
   sh.querySelector('#saveTeam').onclick = async () => {
@@ -712,9 +790,21 @@ function drawTeam(){
       if (url) toast('Probando el calendario…');
       await loadTasks(); lastLoad = Date.now();
       if (url) toast(calStatus === 'ok' ? 'Calendario conectado: ' + TASKS.length + (TASKS.length === 1 ? ' tarea hoy' : ' tareas hoy')
-        : calStatus === 'auth' ? 'El enlace no es correcto. Revisa el token y el ID' : 'No se ha podido conectar con el calendario');
+        : calStatus === 'auth' ? 'El enlace no es correcto. Revisa que esté completo, con el token' : 'No se ha podido conectar con el calendario');
     }
     render();
+  };
+}
+function drawReset(){
+  sheet(`<h2>¿Empezar de cero?</h2>
+    <p class="sub">Se borran de este móvil las estrellas, la racha, el registro, los canjes y el nombre. Se mantienen el enlace del calendario, el código y los tiempos. La hoja de Google no se toca.</p>
+    ${S.outbox.length ? `<p class="banner">Hay ${S.outbox.length} registros sin enviar. Si borras ahora, se perderán.</p>` : ''}
+    <button class="btn" id="resetYes">Sí, borrar todo</button><button class="btn alt" id="resetNo">Cancelar</button>`);
+  $('#resetNo').onclick = drawTeam;
+  $('#resetYes').onclick = () => {
+    const keep = {calUrl: S.calUrl, pin: S.pin, minPct: S.minPct, consultMax: S.consultMax};
+    try { localStorage.setItem('midia', JSON.stringify(keep)); } catch(e){}
+    location.reload();
   };
 }
 function collectRewards(){
@@ -740,6 +830,7 @@ function drawLog(){
       if (r.postponed) lines.push('Pospuesta ' + r.postponed + (r.postponed === 1 ? ' vez' : ' veces'));
       if (r.via === 'temporizador') lines.push(r.left ? 'Salió de la app durante la tarea' : 'No salió de la app');
       if (r.note) lines.push('Comentario: ' + esc(r.note));
+      if (r.photoSent) lines.push('Foto enviada a la carpeta del equipo');
       return `<div class="logitem"><b>${esc(r.title)}</b>${lines.map(l => `<p>${l}</p>`).join('')}${r.photo ? `<img src="${r.photo}" alt="Foto de la tarea">` : ''}</div>`;
     }).join('');
     const label = new Date(d + 'T12:00').toLocaleDateString('es-ES',{weekday:'long', day:'numeric', month:'long'});
@@ -786,15 +877,17 @@ $('#sheetWrap').addEventListener('click', e => { if (e.target.id === 'sheetWrap'
 
 let lastLoad = 0;
 async function refresh(){
+  flush();
   if (Date.now() - lastLoad < 60000) return;
   lastLoad = Date.now(); await loadTasks(); if (!F) render();
 }
 (async () => {
   initialTasks(); render(); restoreFocus();
   lastLoad = Date.now(); await loadTasks(); if (!F) render();
+  flush();
   /* Cada minuto se actualiza la pantalla; el calendario se vuelve a pedir cada 5 minutos */
   setInterval(() => {
-    if (Date.now() - lastLoad >= 5*60000) refresh();
+    if (Date.now() - lastLoad >= 5*60000) refresh(); else flush();
     if (!F && tab === 'hoy' && !$('#sheetWrap').classList.contains('open')) render();
   }, 60000);
 })();
