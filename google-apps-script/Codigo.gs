@@ -24,7 +24,7 @@ const CONFIG = {
   HORA_RESUMEN: 8,
 
   // false = todos los días. true = de lunes a viernes, y el lunes resume viernes, sábado y domingo.
-  SOLO_LABORABLES: false
+  SOLO_LABORABLES: true
 };
 /* ------------------------------------------------------ */
 

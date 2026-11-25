@@ -17,7 +17,7 @@ El nombre que se escribe en Ajustes se guarda solo en el móvil y no se envía n
 1. Da a la app las tareas del día del calendario del equipo.
 2. Da a la app los premios activos de la hoja "Mi día · registro y premios", pestaña Premios.
 3. Guarda en la pestaña Registro lo que se hace en la app, y las fotos en una carpeta de Drive.
-4. Manda cada mañana a las 8:00 (aprox.) un correo con el resumen del día anterior.
+4. Manda de lunes a viernes, sobre las 8:00, un correo con el resumen del día anterior. El lunes resume viernes, sábado y domingo.
 
 ## Premios
 
